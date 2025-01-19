@@ -3,10 +3,14 @@ import { ChatContext } from "../../context/ChatContext";
 import { Stack } from "react-bootstrap";
 import moment from "moment";
 import InputEmoji from "react-input-emoji"
+import { AuthContext } from "../../context/AuthContext";
+import { useFetchRecipientUser } from "../../utils/hooks/useFetchRecipient";
 
 const ChatBox = () => {
-    const { currentChat, messages, isMessagesLoading, recipientUser, user } = useContext(ChatContext);
-
+    const {user} = useContext(AuthContext)
+    const { currentChat, messages, isMessagesLoading} = useContext(ChatContext);
+    const {recipientUser} = useFetchRecipientUser(currentChat, user)
+    
     // Handle case where no chat is selected
     if (!currentChat) {
         return (
@@ -38,6 +42,7 @@ const ChatBox = () => {
                     messages.map((message, index) => (
                         <Stack
                             key={index}
+                            
                             className={`message ${
                                 message?.senderId === user?._id
                                     ? "self align-self-end flex-grow-0"
@@ -50,6 +55,9 @@ const ChatBox = () => {
                             </span>
                         </Stack>
                     ))}
+            </Stack>
+            <Stack direction="horizontal" gap={3} className="chat-input flex-grow-0">
+                    <InputEmoji />
             </Stack>
         </Stack>
     );
