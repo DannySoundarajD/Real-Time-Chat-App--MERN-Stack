@@ -9,6 +9,7 @@ const Register = () => {
     <Form onSubmit={registerUser}>
         <Row style={{
             height: "100vh",
+            color: "white",
             justifyContent: "center",
             paddingTop: "10%",
         }}>

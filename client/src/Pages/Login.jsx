@@ -15,6 +15,7 @@ const Login = () => {
     <Form onSubmit = {loginUser}>
         <Row style={{
             height: "100vh",
+            color: "white",
             justifyContent: "center",
             paddingTop: "10%",
         }}>
