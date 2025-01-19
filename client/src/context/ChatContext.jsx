@@ -6,12 +6,12 @@ export const ChatContext = createContext({
     isUserChatsLoading: false,
     userChatsError: null,
     potentialChats: [],
-    currentChat: null, // Current selected chat
-    recipientUser: null, // Recipient user profile
+    currentChat: null,
+    recipientUser: null,
     messages: null,
     isMessagesLoading: false,
     messageError: null,
-    handleChatClick: () => {}, // Handles when a chat is clicked
+    handleChatClick: () => {}, 
 });
 
 export const ChatContextProvider = ({ children, user }) => {
@@ -24,22 +24,20 @@ export const ChatContextProvider = ({ children, user }) => {
     const [messages, setMessages] = useState(null);
     const [isMessagesLoading, setIsMessagesLoading] = useState(false);
     const [messageError, setMessageError] = useState(null);
+    const [sendTextMessageError, setSendTextMessageError] = useState(null);
+    const [newMessage, setNewMessage] = useState(null);
 
     // Fetch potential chats
     useEffect(() => {
         const getUsers = async () => {
             if (!user?._id) {
                 console.error("User is not defined or _id is missing.");
-                return; // Exit the function early
+                return;
             }
 
             try {
                 const response = await getRequest(`${baseUrl}/users`);
-
-                if (response.error) {
-                    console.error("Error fetching users", response);
-                    return;
-                }
+                if (response.error) return;
 
                 const pChats = response.filter((u) => {
                     let isChatCreated = false;
@@ -66,7 +64,7 @@ export const ChatContextProvider = ({ children, user }) => {
 
     // Fetch user chats
     useEffect(() => {
-        const fetchUserChats = async () => {
+        const getUserChats = async () => {
             if (!user?._id) return;
 
             setIsUserChatsLoading(true);
@@ -86,8 +84,43 @@ export const ChatContextProvider = ({ children, user }) => {
             }
         };
 
-        fetchUserChats();
+        getUserChats();
     }, [user]);
+
+    // Handle sending text message and updating state
+    const sendTextMessage = useCallback(
+        async (textMessage, sender, currentChatId, setTextMessage) => {
+            if (!textMessage) return console.log("You must type something...");
+
+            // Optimistic update: Add message to state before the server responds
+            const optimisticallyAddedMessage = {
+                chatId: currentChatId,
+                senderId: sender._id,
+                text: textMessage,
+                createdAt: new Date(), // optimistic timestamp
+            };
+            setMessages((prev) => [...prev, optimisticallyAddedMessage]);
+
+            const response = await postRequest(
+                `${baseUrl}/messages`,
+                JSON.stringify({
+                    chatId: currentChatId,
+                    senderId: sender._id,
+                    text: textMessage,
+                })
+            );
+
+            if (response.error) {
+                setSendTextMessageError(response);
+                return;
+            }
+
+            // After the message is successfully sent, update state with actual response
+            setMessages((prev) => [...prev.slice(0, -1), response]); // Replace optimistic message with actual
+            setTextMessage(""); // Clear the input after sending
+        },
+        []
+    );
 
     const createChat = async (firstId, secondId) => {
         try {
@@ -100,74 +133,43 @@ export const ChatContextProvider = ({ children, user }) => {
             );
 
             if (response.error) {
-                console.error("Error creating chat:", response);
+                return console.error("Error creating chat:", response);
             } else {
-                console.log("Chat created successfully:", response);
-                setUserChats((prev) => [...prev, response]); // Update user chats
+                setUserChats((prev) => [...prev, response]);
             }
         } catch (error) {
             console.error("Error creating chat:", error);
         }
     };
 
-    // Fetch recipient user when currentChat changes
-    const fetchRecipientUser = async () => {
-        if (!currentChat || !currentChat.members) {
-            console.error("No current chat or chat members found.");
-            return;
-        }
-    
-        const recipientId = currentChat.members.find((id) => id !== user?._id);
-        if (!recipientId) {
-            console.error("Recipient ID not found.");
-            setRecipientUser(null);
-            return;
-        }
-    
-        try {
-            const response = await getRequest(`${baseUrl}/users/${recipientId}`);
-    
-            if (response.error) {
-                console.error(`Error fetching recipient user for ID ${recipientId}:`, response.error);
-                setRecipientUser(null);
-            } else {
-                setRecipientUser(response);
-            }
-        } catch (error) {
-            console.error(`Unexpected error while fetching recipient user for ID ${recipientId}:`, error);
-            setRecipientUser(null);
-        }
-    };
-    
-
-    // Fetch messages when currentChat changes
+    // Fetch messages for the current chat when it changes
     useEffect(() => {
-        const fetchMessages = async () => {
+        const getMessages = async () => {
             if (!currentChat?._id) return;
 
             setIsMessagesLoading(true);
             setMessageError(null);
 
-            
-                const response = await getRequest(`${baseUrl}/chats/${user._id}`);
+            try {
+                const response = await getRequest(`${baseUrl}/messages/${currentChat._id}`);
                 if (response.error) {
                     setMessageError(response.error);
                 } else {
-                    setMessages(response);
+                    setMessages(response); // Update with the fetched messages
                 }
-            
-                
-           
+            } catch (error) {
+                setMessageError(error.message);
+            } finally {
                 setIsMessagesLoading(false);
-            
+            }
         };
 
-        fetchMessages();
+        getMessages();
     }, [currentChat]);
 
     // Handle chat click to set the current chat
     const handleChatClick = useCallback((chat) => {
-        setCurrentChat(chat); // Update the selected chat
+        setCurrentChat(chat); 
     }, []);
 
     return (
@@ -184,6 +186,7 @@ export const ChatContextProvider = ({ children, user }) => {
                 isMessagesLoading,
                 messageError,
                 handleChatClick,
+                sendTextMessage,
             }}
         >
             {children}

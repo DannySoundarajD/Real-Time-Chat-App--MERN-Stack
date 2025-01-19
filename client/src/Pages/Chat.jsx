@@ -13,7 +13,7 @@ const Chat = () => {
     return (
         <Container>
             <PotentialChats />
-            {userChats?.length < 0 ? null : (
+            {userChats?.length < 1 ? null : (
                 <Stack direction="horizontal" gap={4} className="align-items-start">
                     {/* User Chats */}
                     <Stack className="messages-box flex-grow-0 pe-3" gap={3}>
