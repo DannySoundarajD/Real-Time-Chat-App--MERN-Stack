@@ -88,39 +88,7 @@ export const ChatContextProvider = ({ children, user }) => {
     }, [user]);
 
     // Handle sending text message and updating state
-    const sendTextMessage = useCallback(
-        async (textMessage, sender, currentChatId, setTextMessage) => {
-            if (!textMessage) return console.log("You must type something...");
-
-            // Optimistic update: Add message to state before the server responds
-            const optimisticallyAddedMessage = {
-                chatId: currentChatId,
-                senderId: sender._id,
-                text: textMessage,
-                createdAt: new Date(), // optimistic timestamp
-            };
-            setMessages((prev) => [...prev, optimisticallyAddedMessage]);
-
-            const response = await postRequest(
-                `${baseUrl}/messages`,
-                JSON.stringify({
-                    chatId: currentChatId,
-                    senderId: sender._id,
-                    text: textMessage,
-                })
-            );
-
-            if (response.error) {
-                setSendTextMessageError(response);
-                return;
-            }
-
-            // After the message is successfully sent, update state with actual response
-            setMessages((prev) => [...prev.slice(0, -1), response]); // Replace optimistic message with actual
-            setTextMessage(""); // Clear the input after sending
-        },
-        []
-    );
+    
 
     const createChat = async (firstId, secondId) => {
         try {
@@ -166,6 +134,40 @@ export const ChatContextProvider = ({ children, user }) => {
 
         getMessages();
     }, [currentChat]);
+
+
+    const sendTextMessage = useCallback(
+        async (textMessage, sender, currentChatId, setTextMessage) => {
+            if (!textMessage) return console.log("You must type something...");
+
+
+
+            const response = await postRequest(
+                `${baseUrl}/messages`,
+                
+                JSON.stringify({
+                    chatId: currentChatId,
+                    senderId: sender._id,
+                    text: textMessage,
+                })
+                
+            );
+            if (response.error) {
+                setSendTextMessageError(response);
+                return;
+            }
+
+            console.log(currentChatId)
+            setNewMessage(response)
+            setMessages((prev) => [...prev, response]); 
+            setTextMessage("");
+            console.log(typeof(currentChatId));
+
+        },
+        []
+    );
+
+
 
     // Handle chat click to set the current chat
     const handleChatClick = useCallback((chat) => {

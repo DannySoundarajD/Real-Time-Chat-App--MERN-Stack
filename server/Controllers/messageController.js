@@ -4,10 +4,11 @@ const createMessage = async (req, res) => {
     const { chatId, senderId, text } = req.body;
 
     const message = new messageModel({
-        chatId, 
         senderId,
+        chatId, 
         text,
     });
+
 
     try {
         const response = await message.save();
