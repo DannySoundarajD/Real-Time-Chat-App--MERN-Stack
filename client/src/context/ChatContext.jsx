@@ -154,7 +154,7 @@ export const ChatContextProvider = ({ children, user }) => {
         };
 
         getUserChats();
-    }, [user]);
+    }, [user, notifications]);
 
     // Handle sending text message and updating state
     
@@ -269,6 +269,25 @@ export const ChatContextProvider = ({ children, user }) => {
         setNotifications(mNotifications)
     }, [])
 
+    const markThisUserNotificationAsRead = useCallback((thisUserNotifications, notifications) => {
+
+
+        const mNotifications = notifications.map(el => {
+            let notification;
+
+            thisUserNotifications.forEach(n => {
+                if(n.senderId === el.senderId){
+                    notification = {...n, isRead: true}
+                }else {
+                    notification = el
+                }
+            })
+
+            return notification
+        })
+
+        setNotifications(mNotifications)
+    }, [])
 
     return (
         <ChatContext.Provider
@@ -290,6 +309,8 @@ export const ChatContextProvider = ({ children, user }) => {
                 allUsers,
                 markAllNotificationsAsRead,
                 markNotificationsAsRead,
+                markThisUserNotificationAsRead,
+
             }}
         >
             {children}

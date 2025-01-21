@@ -135,7 +135,7 @@ body {
 }
 /* Notifications Box */
 .notifications-box {
-  max-height: 50vh;
+  max-height: 70vh;
   width: 300px;
   position: absolute;
   top: 2rem;
