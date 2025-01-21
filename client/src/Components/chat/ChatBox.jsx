@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { Stack } from "react-bootstrap";
 import moment from "moment";
@@ -11,9 +11,12 @@ const ChatBox = () => {
     const { currentChat, messages, isMessagesLoading, sendTextMessage} = useContext(ChatContext);
     const {recipientUser} = useFetchRecipientUser(currentChat, user)
     const [textMessage, setTextMessage] = useState("")
+    const scroll = useRef()
 
-    console.log("message", messages)
-    console.log("text", textMessage)
+    useEffect(() => {
+        scroll.current?.scrollIntoView({behavior : "smooth"});
+    },[messages])
+   
     // Handle case where no chat is selected
     if (!recipientUser) {
         return (
@@ -51,6 +54,7 @@ const ChatBox = () => {
                                     ? "self align-self-end flex-grow-0"
                                     : "align-self-start flex-grow-0"
                             }`}
+                            ref = {scroll}
                         >
                             <span>{message.text}</span>
                             <span className="message-footer">
