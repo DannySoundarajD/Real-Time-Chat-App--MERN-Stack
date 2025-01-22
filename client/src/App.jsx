@@ -3,7 +3,7 @@ import Chat from "./Pages/Chat";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import "bootstrap/dist/css/bootstrap.min.css";
-import NavBar from "./Components/Navbar";
+import Navbar from "./Components/navbar"; // Correct if the file is named navbar.jsx
 import { Container } from "react-bootstrap";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
@@ -12,7 +12,7 @@ function App() {
     const { user } = useContext(AuthContext)
   return (
     <ChatContextProvider user = {user}>
-    <NavBar />
+      <Navbar />
       <Container >
         <Routes>
           <Route path="/" element={user ? <Chat /> : <Login />} />
