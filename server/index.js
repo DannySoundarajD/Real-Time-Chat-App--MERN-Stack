@@ -5,6 +5,8 @@ const userRoute = require("./Routes/userRoute")
 const chatRoute = require("./Routes/chatRoute")
 const messageRoute = require("./Routes/messageRoute")
 const {Server} = require("socket.io")
+var bcrypt = require('bcryptjs');
+
 
 const app = express()
 require("dotenv").config()
