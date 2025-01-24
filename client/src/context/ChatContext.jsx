@@ -37,7 +37,7 @@ export const ChatContextProvider = ({ children, user }) => {
     // initial socket
 
     useEffect(() => {
-        const newSocket = io(import.meta.env.VITE_SOCKET_URL);
+        const newSocket = io("http://localhost:3000");
         setSocket(newSocket);
 
         return() =>{
